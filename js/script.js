@@ -1,2 +1,9 @@
 const display = document.getElementById("display");
-display.value = "123";
+
+const buttons = document.querySelectorAll("button");
+
+buttons.forEach(function (button) {
+    button.addEventListener("click", function () {
+        console.log(button.textContent);
+    });
+});
