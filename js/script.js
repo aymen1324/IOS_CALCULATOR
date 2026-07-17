@@ -1,7 +1,9 @@
 const display = document.getElementById("display");
 
 const buttons = document.querySelectorAll("button");
-
+let firstNumber = "";
+let operator = "";
+let waitingForSecondNumber = false;
 buttons.forEach(function (button) {
     button.addEventListener("click", function () {
       const value = button.textContent;
