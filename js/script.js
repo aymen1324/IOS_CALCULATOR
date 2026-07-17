@@ -15,11 +15,12 @@ else if (
     value === "+" ||
     value === "−" ||
     value === "×" ||
-    value === "÷" ||
-    value === "=" ||
-    value === "%"
+    value === "÷"
 ) {
-    // Do nothing for now
+    firstNumber = display.value;
+    operator = value;
+    waitingForSecondNumber = true;
+    display.value = "0";
 }
 else if (display.value === "0") {
     display.value = value;
