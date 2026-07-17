@@ -4,6 +4,7 @@ const buttons = document.querySelectorAll("button");
 let firstNumber = "";
 let operator = "";
 let waitingForSecondNumber = false;
+let showingResult = false;
 buttons.forEach(function (button) {
     button.addEventListener("click", function () {
       const value = button.textContent;
@@ -41,19 +42,27 @@ let result;
 
             display.value = result;
             waitingForSecondNumber = false;
+            showingResult = true;
 }
 else if (value === "%") {
   
 }
 
 else {
-if (display.value === "0") {
-    display.value = value;
-}
 
-else {
-    display.value += value;
-}
+    if (showingResult) {
+        display.value = value;
+        showingResult = false;
+    }
+
+    else if (display.value === "0") {
+        display.value = value;
+    }
+
+    else {
+        display.value += value;
+    }
+
 }
     });
 });
