@@ -22,11 +22,38 @@ else if (
     waitingForSecondNumber = true;
     display.value = "0";
 }
-else if (display.value === "0") {
+else if (value === "=") {
+const secondNumber = display.value;
+let result;
+
+            if (operator === "+") {
+                result = Number(firstNumber) + Number(secondNumber);
+            }
+            else if (operator === "−") {
+                result = Number(firstNumber) - Number(secondNumber);
+            }
+            else if (operator === "×") {
+                result = Number(firstNumber) * Number(secondNumber);
+            }
+            else if (operator === "÷") {
+                result = Number(firstNumber) / Number(secondNumber);
+            }
+
+            display.value = result;
+            waitingForSecondNumber = false;
+}
+else if (value === "%") {
+  
+}
+
+else {
+if (display.value === "0") {
     display.value = value;
 }
+
 else {
     display.value += value;
+}
 }
     });
 });
