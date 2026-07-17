@@ -4,6 +4,12 @@ const buttons = document.querySelectorAll("button");
 
 buttons.forEach(function (button) {
     button.addEventListener("click", function () {
-        console.log(button.textContent);
+       const value = button.textContent;
+        console.log("Button clicked:", value);
+       if (display.value === "0") {
+       display.value = value;
+       } else {
+        display.value += value;
+       }
     });
 });
