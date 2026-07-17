@@ -12,6 +12,19 @@ buttons.forEach(function (button) {
   if (value === "AC") {
     display.value = "0";
 }
+else if (value === "⌫") {
+    if (display.value.length > 1) {
+        display.value = display.value.slice(0, -1);
+        
+        // Safeguard: If we just sliced off the last digit of a negative number
+        if (display.value === "−") {
+            display.value = "0";
+        }
+    } else {
+        display.value = "0";
+    }
+}
+
 else if (
     value === "+" ||
     value === "−" ||
