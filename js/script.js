@@ -68,9 +68,16 @@ else {
         showingResult = false;
     }
 
-    else if (display.value === "0") {
+   else if (display.value === "0") {
+
+    if (value === ".") {
+        display.value = "0.";
+    }
+    else {
         display.value = value;
     }
+
+}
 
     else {
         display.value += value;
