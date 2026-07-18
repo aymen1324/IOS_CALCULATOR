@@ -60,6 +60,13 @@ let result;
 else if (value === "%") {
   
 }
+else if (value === "+/−") {
+
+    if (display.value !== "0") {
+        display.value = String(Number(display.value) * -1);
+    }
+
+}
 
 else {
 
