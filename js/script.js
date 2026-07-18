@@ -58,7 +58,7 @@ let result;
             showingResult = true;
 }
 else if (value === "%") {
-  
+  display.value = String(Number(display.value) / 100);
 }
 else if (value === "+/−") {
 
