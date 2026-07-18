@@ -78,10 +78,15 @@ else {
     }
 
 }
+else {
 
-    else {
-        display.value += value;
+    if (value === "." && display.value.includes(".")) {
+        return;
     }
+
+    display.value += value;
+
+}
 
 }
     });
