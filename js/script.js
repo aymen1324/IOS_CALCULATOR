@@ -70,10 +70,17 @@ else if (value === "+/−") {
 
 else {
 
-    if (showingResult) {
-        display.value = value;
-        showingResult = false;
+   if (showingResult) {
+
+    if (value === ".") {
+        display.value = "0.";
     }
+    else {
+        display.value = value;
+    }
+
+    showingResult = false;
+}
 
    else if (display.value === "0") {
 
