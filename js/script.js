@@ -50,8 +50,17 @@ let result;
                 result = Number(firstNumber) * Number(secondNumber);
             }
             else if (operator === "÷") {
-                result = Number(firstNumber) / Number(secondNumber);
-            }
+
+    if (Number(secondNumber) === 0) {
+        display.value = "Error";
+        waitingForSecondNumber = false;
+        showingResult = true;
+        return;
+    }
+
+    result = Number(firstNumber) / Number(secondNumber);
+
+}
 
             display.value = result;
             waitingForSecondNumber = false;
