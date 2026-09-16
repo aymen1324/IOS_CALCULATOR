@@ -32,18 +32,28 @@ let operator = "";
 let lastSecondNumber = "";
 let waitingForSecondNumber = false;
 let showingResult = false;
+let hasError = false;
 
 // SECTION 3: Event Listeners
 // Attaches a click event listener to every button on the calculator.
 buttons.forEach(function (button) {
     button.addEventListener("click", function () {
       const value = button.textContent;
+      if (hasError && value !== "AC") {
+           return;
+      }
       console.log("Button clicked:", value);
 
-  // SECTION 4: Clear All (AC) Handling
-  // Resets the display back to initial zero state.
-  if (value === "AC") {
+// SECTION 4: Clear All (AC) Handling
+// Resets the calculator back to its initial state.
+if (value === "AC") {
     display.value = "0";
+    firstNumber = "";
+    operator = "";
+    lastSecondNumber = "";
+    waitingForSecondNumber = false;
+    showingResult = false;
+    hasError = false;
 }
 
 // SECTION 5: Backspace Button Handling
@@ -59,6 +69,7 @@ else if (value === "⌫") {
     } else {
         display.value = "0";
     }
+
 }
 
 // SECTION 6: Operator Selection (+, −, ×, ÷)
@@ -103,6 +114,7 @@ let result;
         display.value = "Error";
         waitingForSecondNumber = false;
         showingResult = true;
+        hasError = true;
         return;
     }
 
