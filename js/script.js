@@ -3,6 +3,7 @@ const display = document.getElementById("display");
 const buttons = document.querySelectorAll("button");
 let firstNumber = "";
 let operator = "";
+let lastSecondNumber = "";
 let waitingForSecondNumber = false;
 let showingResult = false;
 buttons.forEach(function (button) {
@@ -37,7 +38,14 @@ else if (
     display.value = "0";
 }
 else if (value === "=") {
-const secondNumber = display.value;
+let secondNumber;
+
+if (showingResult) {
+    secondNumber = lastSecondNumber;
+} else {
+    secondNumber = display.value;
+    lastSecondNumber = secondNumber;
+}
 let result;
 
             if (operator === "+") {
@@ -61,7 +69,7 @@ let result;
     result = Number(firstNumber) / Number(secondNumber);
 
 }
-
+            firstNumber = String(result);
             display.value = result;
             waitingForSecondNumber = false;
             showingResult = true;
