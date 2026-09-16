@@ -1,32 +1,12 @@
+/// ==========================================
 // SECTION 1: DOM Elements Setup
-// Selects the calculator display input and all calculator buttons.
+// ==========================================
 const display = document.getElementById("display");
 const buttons = document.querySelectorAll("button");
 
-// Formats numbers with commas while preserving decimals.
-function formatNumber(value) {
-
-    // Don't format empty values or just a minus sign.
-    if (value === "" || value === "-") return value;
-
-    // Handle numbers ending with a decimal point.
-    if (value.endsWith(".")) {
-        const integer = value.slice(0, -1);
-        return Number(integer).toLocaleString("en-US") + ".";
-    }
-
-    // Handle decimal numbers.
-    if (value.includes(".")) {
-        const [integer, decimal] = value.split(".");
-        return Number(integer).toLocaleString("en-US") + "." + decimal;
-    }
-
-    // Handle whole numbers.
-    return Number(value).toLocaleString("en-US");
-}
-
-// SECTION 2: Calculator State Variables
-// Tracks inputs, operations, and state flags for continuous calculations.
+// ==========================================
+// SECTION 2: State Variables
+// ==========================================
 let firstNumber = "";
 let operator = "";
 let lastSecondNumber = "";
@@ -34,156 +14,187 @@ let waitingForSecondNumber = false;
 let showingResult = false;
 let hasError = false;
 
-// SECTION 3: Event Listeners
-// Attaches a click event listener to every button on the calculator.
-buttons.forEach(function (button) {
-    button.addEventListener("click", function () {
-      const value = button.textContent;
-      if (hasError && value !== "AC") {
-           return;
-      }
-      console.log("Button clicked:", value);
+// ==========================================
+// SECTION 3: Utility Functions
+// ==========================================
 
-// SECTION 4: Clear All (AC) Handling
-// Resets the calculator back to its initial state.
-if (value === "AC") {
-    display.value = "0";
-    firstNumber = "";
-    operator = "";
-    lastSecondNumber = "";
-    waitingForSecondNumber = false;
-    showingResult = false;
-    hasError = false;
+// Strips existing visual formatting commas for calculations
+function getRawValue(val = display.value) {
+  return val.replace(/,/g, "");
 }
 
-// SECTION 5: Backspace Button Handling
-// Removes the last character entered or resets to 0 if only one character remains.
-else if (value === "⌫") {
-    if (display.value.length > 1) {
-        display.value = display.value.slice(0, -1);
-        
-        // Safeguard: If we just sliced off the last digit of a negative number
-        if (display.value === "−") {
-            display.value = "0";
-        }
-    } else {
-        display.value = "0";
-    }
+// Formats numbers with localized thousands separators while preserving decimals
+function formatNumber(value) {
+  if (value === "" || value === "-") return value;
 
+  if (value.endsWith(".")) {
+    const integer = value.slice(0, -1);
+    return Number(integer).toLocaleString("en-US") + ".";
+  }
+
+  if (value.includes(".")) {
+    const [integer, decimal] = value.split(".");
+    return Number(integer).toLocaleString("en-US") + "." + decimal;
+  }
+
+  return Number(value).toLocaleString("en-US");
 }
 
-// SECTION 6: Operator Selection (+, −, ×, ÷)
-// Saves the current number and operator, then resets display for second input.
-else if (
-    value === "+" ||
-    value === "−" ||
-    value === "×" ||
-    value === "÷"
-) {
-    firstNumber = display.value.replace(/,/g, "");
-    operator = value;
-    waitingForSecondNumber = true;
-    display.value = "0";
+// Handles core mathematical operations with floating-point stabilization
+function calculate(num1, op, num2) {
+  const n1 = Number(num1);
+  const n2 = Number(num2);
+
+  switch (op) {
+    case "+":
+      return n1 + n2;
+    case "−":
+      return n1 - n2;
+    case "×":
+      return n1 * n2;
+    case "÷":
+      return n2 === 0 ? null : n1 / n2;
+    default:
+      return n2;
+  }
 }
 
-// SECTION 7: Equals Button & Calculation Logic
-// Evaluates the math problem, handles division by zero, and supports repeated equals clicks.
-else if (value === "=") {
-let secondNumber;
-
-if (showingResult) {
-    secondNumber = lastSecondNumber;
-} else {
-    secondNumber = display.value.replace(/,/g, "");
-    lastSecondNumber = secondNumber;
-}
-let result;
-
-            if (operator === "+") {
-                result = Number(firstNumber) + Number(secondNumber);
-            }
-            else if (operator === "−") {
-                result = Number(firstNumber) - Number(secondNumber);
-            }
-            else if (operator === "×") {
-                result = Number(firstNumber) * Number(secondNumber);
-            }
-            else if (operator === "÷") {
-
-    if (Number(secondNumber) === 0) {
-        display.value = "Error";
-        waitingForSecondNumber = false;
-        showingResult = true;
-        hasError = true;
-        return;
-    }
-
-    result = Number(firstNumber) / Number(secondNumber);
-
-}
-            firstNumber = String(result);
-            display.value = formatNumber(String(result));
-            waitingForSecondNumber = false;
-            showingResult = true;
+// Resets calculator to its default operational state
+function resetCalculator() {
+  display.value = "0";
+  firstNumber = "";
+  operator = "";
+  lastSecondNumber = "";
+  waitingForSecondNumber = false;
+  showingResult = false;
+  hasError = false;
 }
 
-// SECTION 8: Percentage Converter
-// Converts current display number into a percentage value (divides by 100).
-else if (value === "%") {
-  display.value = String(Number(display.value) / 100);
+// Triggers locked error state (e.g., division by zero)
+function showError() {
+  display.value = "Error";
+  waitingForSecondNumber = false;
+  showingResult = true;
+  hasError = true;
 }
 
-// SECTION 9: Toggle Positive / Negative (+/−)
-// Flips positive display numbers to negative and vice versa.
-else if (value === "+/−") {
+// ==========================================
+// SECTION 4: Button Event Listener (Dispatcher)
+// ==========================================
+buttons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const value = button.textContent.trim();
 
-    if (display.value !== "0") {
-        display.value = String(Number(display.value) * -1);
-    }
+    // Lock input if in error state until AC is hit
+    if (hasError && value !== "AC") return;
 
-}
+    if (value === "AC") return resetCalculator();
+    if (value === "⌫") return handleBackspace();
+    if (value === "%") return handlePercent();
+    if (value === "+/−") return handlePlusMinus();
+    if (["+", "−", "×", "÷"].includes(value)) return handleOperator(value);
+    if (value === "=") return handleEquals();
 
-// SECTION 10: Number and Decimal Input Handling
-// Handles digits and periods, managing initial zeroes, decimal duplication, and new entry states.
-else {
-
-   if (showingResult) {
-
-    if (value === ".") {
-        display.value = "0.";
-    }
-    else {
-        display.value = value;
-    }
-
-    showingResult = false;
-}
-
-   else if (display.value === "0") {
-
-    if (value === ".") {
-        display.value = "0.";
-    }
-    else {
-        display.value = value;
-    }
-
-}
-else {
-
-    if (value === "." && display.value.includes(".")) {
-        return;
-    }
-
-    // Remove commas before adding the new character.
-    let rawValue = display.value.replace(/,/g, "");
-    rawValue += value;
-
-    // Display the formatted value.
-    display.value = formatNumber(rawValue);
-
-}
-
-}
-    });
+    handleNumber(value);
+  });
 });
+
+// ==========================================
+// SECTION 5: handleNumber()
+// ==========================================
+function handleNumber(value) {
+  // Overwrite screen if starting a new input cycle or second operand
+  if (showingResult || waitingForSecondNumber) {
+    display.value = value === "." ? "0." : value;
+    showingResult = false;
+    waitingForSecondNumber = false;
+    return;
+  }
+
+  // Prevent leading zeros
+  if (display.value === "0") {
+    display.value = value === "." ? "0." : value;
+    return;
+  }
+
+  // Prevent duplicate decimals
+  if (value === "." && display.value.includes(".")) return;
+
+  const rawValue = getRawValue() + value;
+  display.value = formatNumber(rawValue);
+}
+
+// ==========================================
+// SECTION 6: handleOperator()
+// ==========================================
+function handleOperator(value) {
+  firstNumber = getRawValue();
+  operator = value;
+  waitingForSecondNumber = true;
+  showingResult = false;
+}
+
+// ==========================================
+// SECTION 7: handleEquals()
+// ==========================================
+function handleEquals() {
+  if (!operator) return;
+
+  let secondNumber;
+  if (showingResult) {
+    secondNumber = lastSecondNumber;
+  } else {
+    secondNumber = getRawValue();
+    lastSecondNumber = secondNumber;
+  }
+
+  const rawResult = calculate(firstNumber, operator, secondNumber);
+
+  if (rawResult === null || isNaN(rawResult)) {
+    showError();
+    return;
+  }
+
+  // Fix JS floating point drift (e.g., 0.1 + 0.2 = 0.30000000000000004)
+  const sanitizedResult = Number(Math.round(rawResult + "e12") + "e-12");
+
+  firstNumber = String(sanitizedResult);
+  display.value = formatNumber(String(sanitizedResult));
+  showingResult = true;
+  waitingForSecondNumber = false;
+}
+
+// ==========================================
+// SECTION 8: handleBackspace()
+// ==========================================
+function handleBackspace() {
+  if (showingResult) return;
+
+  const raw = getRawValue();
+  if (raw.length > 1) {
+    const sliced = raw.slice(0, -1);
+    display.value = (sliced === "-" || sliced === "") ? "0" : formatNumber(sliced);
+  } else {
+    display.value = "0";
+  }
+}
+
+// ==========================================
+// SECTION 9: handlePercent()
+// ==========================================
+function handlePercent() {
+  const current = Number(getRawValue());
+  const result = current / 100;
+  display.value = formatNumber(String(result));
+}
+
+// ==========================================
+// SECTION 10: handlePlusMinus()
+// ==========================================
+function handlePlusMinus() {
+  const raw = getRawValue();
+  if (raw === "0") return;
+
+  const toggled = Number(raw) * -1;
+  display.value = formatNumber(String(toggled));
+}
