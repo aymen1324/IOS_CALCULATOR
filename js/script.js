@@ -132,6 +132,7 @@ function handleOperator(value) {
   operator = value;
   waitingForSecondNumber = true;
   showingResult = false;
+  display.value = "0";
 }
 
 // ==========================================
@@ -168,9 +169,8 @@ function handleEquals() {
 // SECTION 8: handleBackspace()
 // ==========================================
 function handleBackspace() {
-  if (showingResult) return;
 
-  const raw = getRawValue();
+ const raw = getRawValue();
   if (raw.length > 1) {
     const sliced = raw.slice(0, -1);
     display.value = (sliced === "-" || sliced === "") ? "0" : formatNumber(sliced);
